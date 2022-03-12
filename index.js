@@ -78,7 +78,7 @@ class Workable {
                 //saves to database
                 const addData = new Dbmodel(res);
                 addData.save();
-                
+
                 //using a setTimeout to delay scraping
                 await this.sleep(this.time);
               }
