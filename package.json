@@ -2,7 +2,11 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
     "mongoose": "^6.2.6",
-    "puppeteer": "^13.5.1"
+    "puppeteer": "^13.5.1",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "winston": "^3.6.0",
+    "winston-sentry-log": "^1.0.24"
   },
   "name": "PS",
   "version": "1.0.0",

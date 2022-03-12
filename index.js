@@ -2,13 +2,15 @@ import mongoose from "mongoose";
 import puppeteer from "puppeteer";
 import cheerio from "cheerio";
 import Dbmodel from "./Model/DbModel.js";
+import Logger from "./logger.js";
 async function dbConnect() {
   try {
     await mongoose.connect(
       "mongodb+srv://thehumfree:cream123@thehumfree.7a2ll.mongodb.net/workableJobs?retryWrites=true&w=majority"
     );
+    Logger.log("info", "Database connected");
   } catch (error) {
-    console.error(error);
+    Logger.error(error);
   }
 }
 
@@ -58,12 +60,12 @@ class Workable {
                 return { jobTitle, jobUrl, date };
               }
             } else {
-              //return 1;
+              return 1;
             }
           })
           .get();
         if (result[result.length - 1] === 1) {
-          console.log("Job searched completely");
+          Logger.log("info", "Job Searched Successfully");
           browser.close();
           mongoose.disconnect();
           break;
@@ -78,7 +80,7 @@ class Workable {
                 //saves to database
                 const addData = new Dbmodel(res);
                 addData.save();
-                console.log("Data Saved");
+                Logger.log("info", "Data Entered to Database");
 
                 //using a setTimeout to delay scraping
                 await this.sleep(this.time);
@@ -88,7 +90,7 @@ class Workable {
         }
       }
     } catch (error) {
-      console.error(error);
+      Logger.error(error);
     }
   }
 
