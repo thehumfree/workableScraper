@@ -74,10 +74,11 @@ class Workable {
                 jobTitle: res.jobTitle,
               });
               if (!checkData) {
-                result.createdAt = Date.now();
+                res.createdAt = Date.now();
                 //saves to database
                 const addData = new Dbmodel(res);
                 addData.save();
+                console.log("Data Saved");
 
                 //using a setTimeout to delay scraping
                 await this.sleep(this.time);

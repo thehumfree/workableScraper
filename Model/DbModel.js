@@ -4,7 +4,7 @@ const schema = mongoose.Schema({
   logo: String,
   jobTitle: String,
   jobUrl: String,
-  time: Date,
+  date: Date,
   createdAt: Date,
 });
 
