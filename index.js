@@ -8,9 +8,9 @@ async function dbConnect() {
     await mongoose.connect(
       "mongodb+srv://thehumfree:cream123@thehumfree.7a2ll.mongodb.net/workableJobs?retryWrites=true&w=majority"
     );
-    Logger.log("info", "Database connected");
+    console.log("info", "Database connected");
   } catch (error) {
-    Logger.error(error);
+    console.error(error);
   }
 }
 
@@ -24,7 +24,7 @@ class Workable {
       await dbConnect();
       const browser = await puppeteer.launch({
         args: ["--no-sandbox"],
-        headless: true,
+        headless: false,
       });
       const tab = await browser.newPage();
       for (let offset = 0; offset < 10000; offset += 10) {
@@ -54,49 +54,80 @@ class Workable {
                 jobTitle.match(/back/gi) ||
                 jobTitle.match(/javascript/gi) ||
                 jobTitle.match(/software/gi) ||
-                jobTitle.match(/developer/gi)
+                jobTitle.match(/developer/gi) ||
+                jobTitle.match(/cloud/gi) ||
+                jobTitle.match(/engineer/gi)
               ) {
-                const date = Date.now();
-                return { jobTitle, jobUrl, date };
+                return { jobTitle, jobUrl };
               }
             } else {
               return 1;
             }
           })
           .get();
+
         if (result[result.length - 1] === 1) {
-          Logger.log("info", "Job Searched Successfully");
+          console.log("info", "Job Searched Successfully");
           browser.close();
           mongoose.disconnect();
           break;
         } else {
-          await Promise.all(
-            result.map(async (res) => {
-              const checkData = await Dbmodel.findOne({
-                jobTitle: res.jobTitle,
-              });
-              if (!checkData) {
-                res.createdAt = Date.now();
-                //saves to database
-                const addData = new Dbmodel(res);
-                addData.save();
-                Logger.log("info", "Data Entered to Database");
-
-                //using a setTimeout to delay scraping
-                await this.sleep(this.time);
-              }
-            })
-          );
+          await this.jobdes(result, tab);
         }
       }
     } catch (error) {
-      Logger.error(error);
+      console.error(error);
     }
   }
 
+  async jobdes(result, tab) {
+    try {
+      for (let i = 0; i < result.length; i++) {
+        const checkData = await Dbmodel.findOne({
+          jobUrl: result[i].jobUrl,
+        });
+        if (!checkData) {
+          await tab.goto(`${result[i].jobUrl}`);
+          const html = await tab.content();
+          const $ = await cheerio.load(html);
+          result[i].jobApplicationLink = $(
+            '[data-ui="overview-apply-now"]'
+          ).attr("href");
+          result[i].jobDescription = $(
+            ".JobBreakdown__job-breakdown--3whe3"
+          ).html();
+
+          result[i].companyName = $(".jobOverview__link--1aY_B").text();
+          if (
+            result[i].jobDescription.match(/node/gi) ||
+            result[i].jobDescription.match(/javascript/gi) ||
+            result[i].jobDescription.match(/typescript/gi)
+          ) {
+            //saves to database
+            const addData = new Dbmodel(result[i]);
+            addData.save();
+            Logger.log("info", "Data Entered to Database");
+            console.log("Job Added");
+            console.log(result[i]);
+            //using a setTimeout to delay scraping
+            await this.sleep(this.time);
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   //sleep interval function
   async sleep(milseconds) {
     return await new Promise((resolve) => setTimeout(resolve, milseconds));
+  }
+  async delete() {
+    try {
+      const data = await Dbmodel.deleteMany();
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
