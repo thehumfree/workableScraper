@@ -24,7 +24,7 @@ class Workable {
       await dbConnect();
       const browser = await puppeteer.launch({
         args: ["--no-sandbox"],
-        headless: false,
+        headless: true,
       });
       const tab = await browser.newPage();
       for (let offset = 0; offset < 10000; offset += 10) {
