@@ -108,7 +108,7 @@ class Workable {
             addData.save();
             Logger.log("info", "Data Entered to Database");
             console.log("Job Added");
-            console.log(result[i]);
+            // console.log(result[i]);
             //using a setTimeout to delay scraping
             await this.sleep(this.time);
           }
